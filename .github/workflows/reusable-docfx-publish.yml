@@ -1,0 +1,41 @@
+name: Reusable DocFX Build & Deploy
+
+on:
+  workflow_call:
+    inputs:
+      docfx-config:
+        required: false
+        type: string
+        default: 'docfx.json'
+      dotnet-version:
+        required: false
+        type: string
+        default: '10.0.x'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+
+      - name: Install DocFX
+        run: dotnet tool update -g docfx
+
+      - name: Build Documentation
+        run: docfx ${{ inputs.docfx-config }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          force_orphan: true

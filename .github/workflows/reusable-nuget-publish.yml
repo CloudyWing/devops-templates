@@ -1,0 +1,67 @@
+name: Reusable NuGet Publish Logic
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        required: false
+        type: string
+        default: '10.0.x'
+    secrets:
+      NUGET_API_KEY:
+        required: true
+
+jobs:
+  publish-logic:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run Unit Tests (if exists)
+        shell: pwsh
+        run: |
+          $testProjects = Get-ChildItem -Path "." -Filter "*Tests*.csproj" -Recurse
+          if ($testProjects.Count -eq 0) {
+              Write-Host "⚠️ No test projects found. Skipping tests."
+              exit 0 
+          }
+          Write-Host "✅ Found $($testProjects.Count) test projects. Running tests..."
+          foreach ($proj in $testProjects) {
+              dotnet test $proj.FullName --configuration Release --no-restore
+          }
+
+      - name: Pack Projects in src
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ./artifacts
+          $projects = Get-ChildItem -Path "./src" -Filter "*.csproj" -Recurse
+          if ($projects.Count -eq 0) {
+            Write-Error "❌ 找不到 src 內的專案"; exit 1
+          }
+          foreach ($proj in $projects) {
+              dotnet pack $proj.FullName --configuration Release --no-build --output ./artifacts
+          }
+
+      - name: Push to NuGet
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          $packages = Get-ChildItem ./artifacts -Filter *.nupkg
+          foreach ($pkg in $packages) {
+              dotnet nuget push $pkg.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+          }
