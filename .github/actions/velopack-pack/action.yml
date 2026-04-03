@@ -1,0 +1,41 @@
+name: Velopack Pack
+description: 安裝 Velopack CLI 並將已發布的應用程式打包為 Velopack 安裝檔。
+
+inputs:
+  version:
+    description: 套件版號（允許 v 前綴，如 v1.2.3 或 1.2.3）。
+    required: true
+  pack-id:
+    description: Velopack 套件識別碼（如 MyCompany.MyApp）。
+    required: true
+  main-exe:
+    description: 主要可執行檔名稱（如 MyApp.exe）。
+    required: true
+  pack-dir:
+    description: dotnet publish 輸出目錄路徑。
+    required: true
+  output-dir:
+    description: Velopack 打包產出目錄路徑。
+    required: true
+  vpk-version:
+    description: vpk CLI 版本號。
+    required: false
+    default: '0.0.1298'
+
+runs:
+  using: composite
+  steps:
+    - name: Install Velopack CLI
+      shell: pwsh
+      run: dotnet tool install -g vpk --version ${{ inputs.vpk-version }}
+
+    - name: Pack with Velopack
+      shell: pwsh
+      run: |
+        $version = "${{ inputs.version }}".TrimStart('v')
+        vpk pack `
+          --packId ${{ inputs.pack-id }} `
+          --packVersion $version `
+          --packDir ${{ inputs.pack-dir }} `
+          --mainExe ${{ inputs.main-exe }} `
+          --outputDir ${{ inputs.output-dir }}
