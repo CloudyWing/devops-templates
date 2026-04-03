@@ -1,0 +1,33 @@
+# Generated from https://github.com/github/gitignore
+
+# ---- OS 產生檔案 ----
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# ---- AI 工具工作目錄 ----
+# Claude Code
+.claude/
+!.claude/CLAUDE.md
+!.claude/skills/
+!.claude/agents/
+!.claude/commands/
+
+# Cursor
+.cursor/
+!.cursor/rules/
+
+# Gemini CLI
+.gemini/
+!.gemini/GEMINI.md
+
+# Windsurf
+.windsurfrules
+
+# Augment Code
+.augmentignore
+
+# ---- 本地工作檔案 ----
+.local/
+*.local.md
