@@ -13,13 +13,16 @@
 ---
 
 ## 🚀 1. NuGet Publish
+
 負責執行：`Restore` -> `Build` -> `Test (若有)` -> `Pack` -> `Push to NuGet`。
 **注意：** 建議在 Caller Workflow 指定 `runs-on: windows-latest` 以支援完整 Framework (如 .NET 4.5)。
 
 ### 前置需求 (必看)
+
 1. **API Key**：需至 Repo 的 **Settings** > **Secrets and variables** > **Actions**，新增一個 Repository Secret，名稱為 `NUGET_API_KEY`，並填入您的 NuGet API Key。
 
 ### 引用範例
+
 ```yaml
 jobs:
   publish:
